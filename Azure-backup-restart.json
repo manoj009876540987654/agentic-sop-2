@@ -1,0 +1,54 @@
+{
+  "sop_id": "SOP-AZURE-BACKUP-EXT-001",
+  "issue": "Azure Backup Windows Workload extension not working",
+  "severity": "High",
+  "description": "Azure VM backup extension AzureBackupWindowsWorkload is missing, unhealthy, or needs re-application on the virtual machine.",
+  "affected_service": "Azure VM Backup",
+  "platform": "Azure",
+  "detection": {
+    "type": "vm_extension_status",
+    "extension_name": "AzureBackupWindowsWorkload",
+    "condition": "NotPresent | Failed | Unhealthy"
+  },
+  "prerequisites": {
+    "permissions": [
+      "Virtual Machine Contributor",
+      "Automation Runbook Managed Identity enabled"
+    ],
+    "tools": [
+      "Azure PowerShell",
+      "Azure Automation Runbook"
+    ]
+  },
+  "remediation_steps": [
+    {
+      "step": 1,
+      "action": "Authenticate to Azure using Managed Identity",
+      "command": "Connect-AzAccount -Identity"
+    },
+    {
+      "step": 2,
+      "action": "Check Azure Backup extension status",
+      "command": "Get-AzVMExtension -ResourceGroupName SAT-10-WED-CBE -VMName azure-vm-testing -Name AzureBackupWindowsWorkload"
+    },
+    {
+      "step": 3,
+      "action": "Re-apply Azure Backup Windows Workload extension",
+      "command": "Set-AzVMExtension -ResourceGroupName SAT-10-WED-CBE -VMName azure-vm-testing -Name AzureBackupWindowsWorkload -Publisher Microsoft.Azure.RecoveryServices -ExtensionType AzureBackupWindowsWorkload -TypeHandlerVersion 1.0 -Location eastus -Force"
+    }
+  ],
+  "validation": {
+    "method": "Extension status check",
+    "command": "Get-AzVMExtension -ResourceGroupName SAT-10-WED-CBE -VMName azure-vm-testing -Name AzureBackupWindowsWorkload",
+    "expected_result": "ProvisioningState = Succeeded"
+  },
+  "rollback": {
+    "condition": "Extension installation fails repeatedly",
+    "action": "Escalate to Azure Backup / Recovery Services team"
+  },
+  "automation_ready": true,
+  "notes": [
+    "This SOP is designed to be executed via Azure Automation Runbook using Managed Identity.",
+    "Ensure the VM is running and has network connectivity to Azure services."
+  ]
+}
