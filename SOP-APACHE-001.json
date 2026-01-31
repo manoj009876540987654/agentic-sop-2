@@ -1,0 +1,50 @@
+{
+  "sop_id": "SOP-APACHE-001",
+  "issue": "Apache service stopped",
+  "severity": "High",
+  "description": "Apache web server is not running on the host",
+  "detection": {
+    "type": "service_check",
+    "service_name": "apache2",
+    "condition": "stopped"
+  },
+  "possible_causes": [
+    "Service crashed",
+    "Server reboot",
+    "Configuration error",
+    "Port conflict",
+    "Insufficient system resources"
+  ],
+  "remediation_steps": [
+    {
+      "step": 1,
+      "action": "Check Apache service status",
+      "command": "systemctl status apache2"
+    },
+    {
+      "step": 2,
+      "action": "Start Apache service",
+      "command": "systemctl start apache2"
+    },
+    {
+      "step": 3,
+      "action": "Verify Apache is running",
+      "command": "systemctl is-active apache2"
+    },
+    {
+      "step": 4,
+      "action": "Check Apache error logs if service fails",
+      "command": "tail -n 50 /var/log/apache2/error.log"
+    }
+  ],
+  "validation": {
+    "check": "HTTP response",
+    "command": "curl -I http://localhost",
+    "expected_result": "HTTP 200 OK"
+  },
+  "escalation": {
+    "condition": "Service does not start after remediation",
+    "action": "Notify system administrator"
+  },
+  "automation_ready": true
+}
